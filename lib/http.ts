@@ -1,6 +1,18 @@
 import "server-only";
 import { PaiflowApiError } from "@paiflow/sdk";
 import { PaymentValidationError } from "@/lib/amount";
+import { SettlementError } from "@/lib/paidflow-types";
+
+const SETTLEMENT_STATUS: Record<string, number> = {
+  VALIDATION: 422,
+  NOT_CONFIGURED: 503,
+  NO_OPEN_INTENT: 404,
+  PREPARATION_NOT_FOUND: 404,
+  PREPARATION_EXPIRED: 410,
+  ALREADY_SUBMITTED: 409,
+  UNRESOLVED: 502,
+};
+
 export async function handle(action: () => Promise<unknown>) {
   try {
     return Response.json({ data: await action() });
@@ -9,6 +21,12 @@ export async function handle(action: () => Promise<unknown>) {
       return Response.json(
         { error: { code: "VALIDATION", message: error.message } },
         { status: 422 },
+      );
+    }
+    if (error instanceof SettlementError) {
+      return Response.json(
+        { error: { code: error.code, message: error.message } },
+        { status: SETTLEMENT_STATUS[error.code] ?? 502 },
       );
     }
     if (error instanceof PaiflowApiError) {

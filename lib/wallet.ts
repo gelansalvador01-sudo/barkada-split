@@ -1,12 +1,28 @@
 "use client";
-import {
-  isConnected,
-  requestAccess,
-  getAddress,
-  getNetworkDetails,
-  signTransaction,
-} from "@stellar/freighter-api";
+// @stellar/freighter-api@6 ships a CJS bundle whose runtime only populates
+// the DEFAULT export (the named exports exist in the .d.ts but resolve to
+// undefined after bundling). Always go through the default export, and
+// verify the API shape before first use so packaging drift surfaces as a
+// clear "install Freighter" message instead of a TypeError.
+import freighterApi from "@stellar/freighter-api";
 import type { Prepared } from "@/lib/types";
+
+const { isConnected, requestAccess, getAddress, getNetworkDetails, signTransaction } =
+  freighterApi;
+
+function assertFreighterApiShape(): void {
+  if (
+    typeof isConnected !== "function" ||
+    typeof requestAccess !== "function" ||
+    typeof getAddress !== "function" ||
+    typeof getNetworkDetails !== "function" ||
+    typeof signTransaction !== "function"
+  ) {
+    throw new Error(
+      "Install or enable Freighter at freighter.app, then reload this page to connect your testnet wallet.",
+    );
+  }
+}
 export async function connectWallet() {
   await requireFreighter();
   const result = await bounded(
@@ -82,6 +98,7 @@ export async function bounded<T>(
 async function requireFreighter() {
   const message =
     "Install or enable Freighter at freighter.app, then reload this page to connect your testnet wallet.";
+  assertFreighterApiShape();
   const result = await bounded(isConnected(), 2000, message);
   if (result.error || !result.isConnected) throw new Error(message);
 }

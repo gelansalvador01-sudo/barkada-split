@@ -23,7 +23,7 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-Open http://localhost:3000. Without complete server configuration, payment actions remain disabled.
+Open http://localhost:3000 for the Barkada-Split screen; the trip fund payment demo lives at http://localhost:3000/fund. Without complete server configuration, payment actions remain disabled.
 
 The dependency is pinned to **`@paiflow/sdk@0.2.0`**, published under npm's `beta` tag. Developer tokens require a backend implementing OpenAPI `1.1.0`, including the staging environment checked on October 17, 2026.
 
@@ -31,7 +31,7 @@ The dependency is pinned to **`@paiflow/sdk@0.2.0`**, published under npm's `bet
 
 1. In Paiflow, build and deploy an **On Receive (native XLM)** flow that pays the **full amount** to your trip treasurer's testnet wallet. Wait for confirmation and review those rules. This app does not create or deploy flows.
 2. In **Account → Developer**, create a **Read and operate** token and explicitly grant it access to that deployment. Copy its one-time `pfd_` secret. An existing deployment-bound `pfk_` token from **API access** also works.
-3. Set these server-only values in `.env.local`, then restart:
+3. Copy `.env.example` to `.env.local` and fill in the server-only values, then restart the dev server:
 
 ```dotenv
 PAIFLOW_BASE_URL=https://beta.app.paiflow.xyz
@@ -39,9 +39,18 @@ PAIFLOW_DEPLOYMENT_ID=<your confirmed deployment UUID>
 PAIFLOW_API_TOKEN=<your pfd_ or pfk_ token>
 ```
 
-Leave the values empty while developing; payment actions stay disabled until the configuration is complete.
+4. Verify the connection: open **Profile → Paidflow connection → Check**. It calls `GET /api/integration`, which validates the credentials and refuses anything but an active **testnet native-XLM** deployment with execute support. Until this reports ready, every settle action fails closed with "Setup Paidflow" instead of pretending to pay.
 
 Never use `NEXT_PUBLIC_` for these settings, commit `.env.local`, or put wallet secret keys into the app. The app uses the configured deployment, never the first discovery result. A developer token must explicitly include that deployment.
+
+## Settle a group balance (Barkada-Split)
+
+1. Install Freighter, switch it to **Testnet**, and fund the wallet with testnet XLM (contribution plus fees).
+2. On the dashboard, tap the **Freighter** header pill (or any **Connect Freighter to Settle** button) and authorize access.
+3. Tap **Settle** on a card (or **Settle All**). The runner connects Freighter, prepares the envelope **for your own Stellar address**, persists the preparation, asks Freighter to sign, verifies the signed body/hash is unchanged (`assertOriginal`), persists the exact signed envelope, submits it, then polls a bounded confirmation window.
+4. On `confirmed`, the card badge flips to **All settled** and the header counter decrements. `pending` after the window stays unresolved — check the original transaction, never auto-retry a replacement.
+
+The USDC figures are the app's ledger denomination; the configured Paiflow deployment executes native testnet XLM for the same amounts. Keep amounts small and treat this as a rehearsal.
 
 Complete credentials enable this example. Removing them disables new API actions but does not cancel an existing transaction. Retain recovery evidence when changing configuration.
 
@@ -73,6 +82,22 @@ An unresolved payment record for another platform or deployment blocks a new pay
 
 | File                           | Responsibility                                                 |
 | ------------------------------ | -------------------------------------------------------------- |
+| `components/barkada-split-app.tsx` | Bill-splitting dashboard: feed, filters, settle flows, scanner |
+| `components/app-nav.tsx`       | Tab bar, FAB bottom sheet (new group / instant split), toasts  |
+| `components/bs-screen.tsx`     | Shared mobile device frame + ambient glows                     |
+| `lib/barkada-store.ts`         | Group ledger store (localStorage, micro-safe balance math)     |
+| `lib/usdc.ts`                  | USDC ↔ 6-decimal micro conversion and even-split helpers       |
+| `lib/paidflow-settlement.ts`   | Server-only Paidflow billing intents + settlement lifecycle    |
+| `lib/paidflow-client.ts`       | Browser client for the billing / settlement / nudge API routes |
+| `lib/freighter-wallet.ts`      | Freighter connection state (the signing wallet)                |
+| `components/freighter-pill.tsx` | Header pill for the Freighter signing wallet                   |
+| `lib/settlement-runner.ts`     | Client settlement lifecycle orchestrator (prepare→confirm)     |
+| `lib/settlement-recovery.ts`   | Scoped Web Locks + fail-closed recovery records                |
+| `app/groups/page.tsx`          | Barkada grid view; `app/groups/[id]` is the itemized ledger    |
+| `app/split/new/page.tsx`       | Three-step itemized split creation wizard                      |
+| `app/activity/page.tsx`        | Ledger-derived activity timeline                               |
+| `app/profile/page.tsx`         | Account parameters, alerts toggles, demo reset                 |
+| `app/fund/page.tsx`            | Trip fund walkthrough; the payment demo lives at `/fund`       |
 | `lib/paiflow.ts`               | Server-only configuration and typed SDK payment calls          |
 | `lib/amount.ts`                | Decimal↔stroop conversion and amount validation (bigint)       |
 | `lib/contributions.ts`         | Display-only local history of settled contributions            |

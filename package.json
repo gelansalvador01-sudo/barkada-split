@@ -17,10 +17,13 @@
     "@paiflow/sdk": "0.2.0",
     "@stellar/freighter-api": "^6.0.1",
     "@stellar/stellar-sdk": "^17.2.1",
+    "@tailwindcss/postcss": "^4.3.3",
     "next": "^15.5.25",
+    "postcss": ">=8.5.23 <9",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",

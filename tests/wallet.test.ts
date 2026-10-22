@@ -1,18 +1,21 @@
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { signPrepared, connectWallet, refreshWallet } from "@/lib/wallet";
-import {
-  isConnected,
-  getNetworkDetails,
-  getAddress,
-  requestAccess,
-  signTransaction,
-} from "@stellar/freighter-api";
+import freighterApi from "@stellar/freighter-api";
+
+const { isConnected, getNetworkDetails, getAddress, requestAccess, signTransaction } =
+  freighterApi;
+
+// Mirror the runtime package shape: v6 ships a CJS bundle that only populates
+// the DEFAULT export with the API functions. Tests must exercise that same
+// path, not the phantom named exports declared in the .d.ts.
 vi.mock("@stellar/freighter-api", () => ({
-  isConnected: vi.fn(),
-  getNetworkDetails: vi.fn(),
-  getAddress: vi.fn(),
-  requestAccess: vi.fn(),
-  signTransaction: vi.fn(),
+  default: {
+    isConnected: vi.fn(),
+    getNetworkDetails: vi.fn(),
+    getAddress: vi.fn(),
+    requestAccess: vi.fn(),
+    signTransaction: vi.fn(),
+  },
 }));
 const address = `G${"A".repeat(55)}`;
 const passphrase = "Test SDF Network ; September 2015";
