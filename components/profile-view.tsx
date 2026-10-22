@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { resetDemo } from "@/lib/barkada-store";
+import { clearAccount, clearSession } from "@/lib/auth-store";
+import { disconnectFreighterWallet } from "@/lib/freighter-wallet";
 import { useProfile } from "@/lib/profile-store";
 import type { Profile } from "@/lib/profile-store";
 import { browserRequest } from "@/lib/browser-api";
@@ -76,6 +78,26 @@ export function ProfileView() {
   function handleResetDemo() {
     resetDemo();
     toast("Demo data restored 🔄");
+  }
+
+  /** Replay the visual flow; the app gate asks for a log in afterwards. */
+  function handleReplayOnboarding() {
+    clearSession();
+    router.push("/onboarding");
+  }
+
+  /** Wipe the stored account and start a fresh registration. */
+  function handleCreateAnotherAccount() {
+    clearAccount();
+    clearSession();
+    router.push("/onboarding?stage=signup");
+  }
+
+  /** End the session: disconnect the signing wallet and gate the app again. */
+  function handleLogOut() {
+    disconnectFreighterWallet();
+    clearSession();
+    router.replace("/onboarding");
   }
 
   /** Health-check the server-side Paiflow deployment (credentials + testnet). */
@@ -257,6 +279,28 @@ export function ProfileView() {
           className="mt-3 w-full rounded-2xl border border-magenta/30 bg-magenta/10 py-3 text-sm font-semibold text-magenta transition hover:border-magenta/60 hover:bg-magenta/20 hover:text-white active:scale-[0.98]"
         >
           Reset demo data
+        </button>
+        <button
+          type="button"
+          onClick={handleReplayOnboarding}
+          className="mt-3 w-full rounded-2xl border border-lavender/20 bg-white/[0.03] py-3 text-sm font-semibold text-lavender transition hover:border-lavender/45 hover:bg-white/[0.07] hover:text-white active:scale-[0.98]"
+        >
+          Replay onboarding
+        </button>
+        <button
+          type="button"
+          onClick={handleCreateAnotherAccount}
+          className="mt-3 w-full rounded-2xl border border-mint/30 bg-mint/10 py-3 text-sm font-semibold text-mint transition hover:border-mint/60 hover:bg-mint/20 hover:text-white active:scale-[0.98]"
+        >
+          Create another account
+        </button>
+        <button
+          type="button"
+          onClick={handleLogOut}
+          aria-label="Log out"
+          className="mt-3 w-full rounded-2xl border border-rose-400/30 bg-rose-500/10 py-3 text-sm font-semibold text-rose-300 transition hover:border-rose-400/60 hover:bg-rose-500/20 hover:text-white active:scale-[0.98]"
+        >
+          Log out
         </button>
       </section>
     </Screen>

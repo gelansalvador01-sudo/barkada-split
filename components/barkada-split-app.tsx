@@ -656,20 +656,25 @@ export function BarkadaSplitApp() {
             <article
               key={group.id}
               onClick={openGroup(group.id)}
-              className={`glass-card flex cursor-pointer items-center gap-3.5 rounded-3xl p-4 transition-[transform,border-color,background-color] duration-200 hover:border-lavender/40 hover:bg-white/[0.05] active:scale-[0.98] ${
+              className={`glass-card cursor-pointer rounded-3xl p-4 transition-[transform,border-color,background-color] duration-200 hover:border-lavender/40 hover:bg-white/[0.05] active:scale-[0.98] ${
                 group.status === "settled" ? "opacity-60 saturate-50" : ""
               }`}
             >
-              <AvatarStack people={group.people} />
-              <div className="min-w-0 flex-1">
-                <h3 className="truncate text-[15px] font-semibold">
-                  {group.name} <span aria-hidden>{group.emoji}</span>
-                </h3>
-                <p className="mt-0.5 truncate text-xs text-white/40">
-                  {formatUsdc(toMicro(group.total))} total · {group.people.length} people · {group.elapsed}
-                </p>
+              {/* Row 1 — identity: avatars + name/total */}
+              <div className="flex items-center gap-3.5">
+                <AvatarStack people={group.people} />
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-[15px] font-semibold">
+                    {group.name} <span aria-hidden>{group.emoji}</span>
+                  </h3>
+                  <p className="mt-0.5 truncate text-xs text-white/40">
+                    {formatUsdc(toMicro(group.total))} total · {group.people.length} people · {group.elapsed}
+                  </p>
+                </div>
               </div>
-              <div className="flex shrink-0 flex-col items-end gap-2">
+
+              {/* Row 2 — status + action */}
+              <div className="mt-3.5 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-3">
                 <StatusBadge group={group} />
                 {group.status === "owed" && (
                   <button
@@ -685,9 +690,6 @@ export function BarkadaSplitApp() {
                     {nudged === group.id ? "Nudged!" : "Nudge"}
                   </button>
                 )}
-                {group.status === "owe" && (
-                  <SettleButton group={group} onSettled={handleGroupSettled} />
-                )}
                 {group.status === "settled" && (
                   <button
                     type="button"
@@ -699,6 +701,12 @@ export function BarkadaSplitApp() {
                   </button>
                 )}
               </div>
+
+              {group.status === "owe" && (
+                <div className="mt-3">
+                  <SettleButton group={group} onSettled={handleGroupSettled} fullWidth />
+                </div>
+              )}
             </article>
           ))}
 

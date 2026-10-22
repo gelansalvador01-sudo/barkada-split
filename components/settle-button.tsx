@@ -19,6 +19,8 @@ export type SettleButtonProps = {
   group: Group;
   /** Called only after Paidflow confirms the on-chain settlement. */
   onSettled: (group: Group, confirmation: SettlementConfirmation) => void;
+  /** Stretch to the full container width (dashboard card action row). */
+  fullWidth?: boolean;
 };
 
 type SettlePhase =
@@ -43,9 +45,10 @@ const PHASE_LABEL: Record<Exclude<SettlePhase, "idle" | "unconfigured">, string>
  *  - Confirmed (via onSettled) -> parent flips the badge to "All settled"
  *  - Server not configured    -> honest "Setup Paidflow" state (no fake success)
  */
-export function SettleButton({ group, onSettled }: SettleButtonProps) {
+export function SettleButton({ group, onSettled, fullWidth = false }: SettleButtonProps) {
   const wallet = useFreighterWallet();
   const [phase, setPhase] = useState<SettlePhase>("idle");
+  const width = fullWidth ? " w-full justify-center" : "";
 
   if (wallet.status !== "connected") {
     const handleConnect: (event: MouseEvent<HTMLButtonElement>) => void = (event) => {
@@ -62,7 +65,7 @@ export function SettleButton({ group, onSettled }: SettleButtonProps) {
       <button
         type="button"
         onClick={handleConnect}
-        className="action-mini settle"
+        className={`action-mini settle${width}`}
         aria-label={`Connect Freighter to settle ${group.name}`}
       >
         <WalletIcon className="size-3.5 text-orchid" />
@@ -81,7 +84,7 @@ export function SettleButton({ group, onSettled }: SettleButtonProps) {
             "Paidflow deployment not configured — add the server-side Paiflow credentials and restart, then retry.",
           );
         }}
-        className="action-mini settle"
+        className={`action-mini settle${width}`}
         title="Paidflow deployment is not configured on the server"
         aria-label={`Paidflow not configured for ${group.name}`}
       >
@@ -95,7 +98,7 @@ export function SettleButton({ group, onSettled }: SettleButtonProps) {
     return (
       <span
         role="status"
-        className="action-mini settle cursor-wait opacity-90"
+        className={`action-mini settle cursor-wait opacity-90${width}`}
         aria-label={`Settling ${group.name}`}
       >
         <span className="size-3 animate-spin rounded-full border-2 border-lavender/30 border-t-lavender" />
@@ -138,7 +141,7 @@ export function SettleButton({ group, onSettled }: SettleButtonProps) {
     <button
       type="button"
       onClick={handleSettle}
-      className="action-mini settle"
+      className={`action-mini settle${width}`}
       aria-label={`Settle ${group.name}`}
       title={group.amount ? `Settle ${formatUsdc(toMicro(group.amount))} via Paidflow` : undefined}
     >

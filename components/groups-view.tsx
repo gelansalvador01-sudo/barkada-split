@@ -29,7 +29,7 @@ export function GroupsView() {
         </div>
       </header>
 
-      <section className="px-5 pt-5">
+      <section className="flex flex-1 flex-col px-5 pt-5">
         <div className="grid grid-cols-2 gap-3">
           {groups.map((group) => (
             <button
@@ -63,6 +63,14 @@ export function GroupsView() {
             </button>
           ))}
         </div>
+
+        {/* fill remaining height so the tab bar never rides up */}
+        <div className="min-h-6 flex-1" />
+
+        <p className="glass-card mb-5 rounded-3xl p-4 text-center text-xs font-medium leading-relaxed text-white/50">
+          Tap the <span className="font-bold text-lavender">+</span> button to
+          create a new barkada or split a bill with this crew ⚡
+        </p>
       </section>
     </Screen>
   );

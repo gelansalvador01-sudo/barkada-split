@@ -2,10 +2,12 @@
 
 import type { ReactNode } from "react";
 import { AppNav } from "@/components/app-nav";
+import { OnboardingGate } from "@/components/onboarding-gate";
 
 /**
  * Shared mobile device frame: obsidian canvas, ambient violet glows,
  * the 430px app column (floating device on desktop) and the tab bar.
+ * First-run visitors are gated to /onboarding before content renders.
  */
 export function Screen({ children }: { children: ReactNode }) {
   return (
@@ -17,7 +19,9 @@ export function Screen({ children }: { children: ReactNode }) {
           <div className="absolute -left-28 top-1/3 h-72 w-72 rounded-full bg-lavender/10 blur-[110px]" />
           <div className="absolute -right-24 bottom-24 h-80 w-80 rounded-full bg-fuchsia-600/15 blur-[120px]" />
         </div>
-        <div className="relative flex min-h-0 flex-1 flex-col">{children}</div>
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <OnboardingGate>{children}</OnboardingGate>
+        </div>
         <AppNav />
       </div>
     </div>

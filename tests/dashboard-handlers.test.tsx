@@ -15,7 +15,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: pushMock }),
+  useRouter: () => ({ push: pushMock, replace: vi.fn() }),
   usePathname: () => "/",
 }));
 // Render portals inline: react-test-renderer cannot manage foreign DOM
@@ -116,6 +116,8 @@ async function flush(): Promise<void> {
 beforeEach(() => {
   vi.clearAllMocks();
   values = new Map();
+  // Pretend a verified login session is active so the gate renders content.
+  values.set("barkada-split:session", "1");
   vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
   vi.stubGlobal("document", { body: { nodeType: 1 } });
   vi.stubGlobal("localStorage", {
